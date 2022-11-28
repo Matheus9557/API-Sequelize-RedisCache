@@ -4,22 +4,22 @@ const Pessoa = require('../models/pessoa');
 const client = require('../database/redis');
 
 const buscarPessoa = async (request, response) =>{
-    const email = request.params.email;
+    const id = request.params.id;
 
-    const resultado = await client.get(email);
+    const resultado = await client.get(id);
 
     if(resultado!=null){
         const pessoa = JSON.parse(resultado);
         response.status(200).send(pessoa);
     }else{
         const pessoa = await Pessoa.findOne({where:{
-        email:email
+        id:id
     }});
 
     if(pessoa == null){
         response.status(200).send('Usuário não encontrado');
     }else{
-        client.set(email, JSON.stringify(pessoa), {EX: 3600});
+        client.set(id, JSON.stringify(pessoa), {EX: 3600});
         response.status(200).send(pessoa);
     }
 
@@ -43,11 +43,11 @@ const addPessoa = async (request, response) =>{
 };
 
 const deletarPessoa = async (request, response)=>{
-    const email = request.params.email;
+    const id = request.params.id;
 
     Pessoa.destroy({
         where: {
-            email: email
+            id: id
         }
     }).then(result=>{
         if(result>0){
@@ -67,7 +67,7 @@ const atualizarPessoa = async(request, response)=>{
         nome: request.body.nome},
             {
                 where: {
-                    email: request.body.email
+                    id: request.body.id
             }
         }
     ).then(result=>{
